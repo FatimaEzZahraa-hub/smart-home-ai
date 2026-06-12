@@ -1,170 +1,165 @@
 # 🏠 Assistant de Maison Intelligente
 
-> Projet de fin d'études – IoT + IA + Dashboard Web
+> Projet IoT & Intelligence Artificielle
 
-## 📋 Vue d'ensemble
+## 📋 Présentation
 
-Un système domotique intelligent composé de :
-- **ESP32** (simulé sur Wokwi) avec capteurs DHT22, LED et ventilateur
-- **Backend Python Flask** exposant une API REST
-- **IA conversationnelle** (Groq · llama3-8b) pour interpréter les commandes
-- **Dashboard Web** HTML/CSS/JS avec graphes en temps réel
-- **Prédiction IA** des températures sur 24h (modèle SVR)
+Ce projet implémente un système de maison intelligente permettant de surveiller et contrôler des équipements à distance à travers une interface web interactive.
+
+Le système combine :
+
+* Un ESP32 simulé sur Wokwi
+* Un capteur DHT22 pour la température
+* Une LED simulant l’éclairage
+* Un serveur Flask exposant une API REST
+* Un dashboard web en temps réel
+* Un assistant IA permettant d’interpréter des commandes en langage naturel
 
 ---
 
-## 🗂️ Structure du projet
+## 🏗️ Architecture du projet
 
+```text
+ESP32 (Wokwi)
+    │
+    ▼
+Serveur Flask
+    │
+    ├── Dashboard Web
+    │
+    └── Assistant IA
 ```
-smart-home/
+
+Le capteur DHT22 envoie périodiquement les mesures de température au serveur Flask via HTTP.
+
+Le serveur stocke l’état de la maison (température, lumière, ventilation) et le transmet au dashboard.
+
+---
+
+## 📂 Structure du projet
+
+```text
+smart-home-ai/
+
 ├── backend/
-│   ├── app.py              # Serveur Flask principal
-│   ├── db.py               # Base de données SQLite
-│   ├── ai_assistant.py     # IA conversationnelle (Groq)
-│   ├── predictor.py        # Modèle SVR de prédiction
-│   ├── simulate_esp32.py   # Script de simulation capteurs
-│   ├── requirements.txt
-│   └── .env.example
+│   ├── server.py
+│   └── requirements.txt
+│
 ├── frontend/
-│   └── index.html          # Dashboard complet (HTML/CSS/JS)
-└── esp32/
-    ├── smart_home.ino      # Code Arduino ESP32
-    ├── diagram.json        # Schéma Wokwi
-    └── libraries.txt       # Dépendances Wokwi
+│   ├── index.html
+│   ├── style.css
+│   └── script.js
+│
+├── esp32/
+│   ├── smart_home.ino
+│   └── diagram.json
+│
+└── README.md
 ```
 
 ---
 
-## 🚀 Installation & Lancement
+## ⚙️ Fonctionnalités
 
-### 1. Obtenir une clé API Groq (gratuite)
+### 🌡️ Surveillance de la température
 
-1. Aller sur [console.groq.com](https://console.groq.com/keys)
-2. Créer un compte gratuit
-3. Générer une clé API
+* Lecture de la température avec un capteur DHT22
+* Envoi automatique des données au serveur Flask
+* Affichage en temps réel sur le dashboard
 
-### 2. Configurer le backend
+### 💡 Contrôle de l’éclairage
 
-```bash
-cd backend
+* Allumage et extinction de la lumière
+* Synchronisation entre le dashboard et l’ESP32
 
-# Copier le fichier d'environnement
-cp .env.example .env
+### 🌬️ Gestion de la ventilation
 
-# Éditer .env et coller votre clé Groq
-# GROQ_API_KEY=gsk_xxxxxxxxxxxx
+* Contrôle de la vitesse du ventilateur
+* Affichage de l’état actuel dans le dashboard
 
-# Installer les dépendances
-pip install -r requirements.txt
+### 🤖 Assistant IA
 
-# Lancer le serveur
-python app.py
-```
+L’utilisateur peut envoyer des commandes telles que :
 
-Le backend démarre sur **http://localhost:5000**
+* « Allume la lumière »
+* « Éteins la lumière »
+* « Augmente la ventilation »
+* « Quelle est la température actuelle ? »
 
-### 3. Lancer la simulation ESP32
-
-Dans un **second terminal** :
-```bash
-cd backend
-python simulate_esp32.py
-```
-
-Cela envoie automatiquement des données de capteurs simulées au backend.
-
-### 4. Ouvrir le dashboard
-
-Ouvrir `frontend/index.html` dans un navigateur (double-clic ou Live Server).
-
-### 5. (Optionnel) Simulation Wokwi
-
-1. Aller sur [wokwi.com](https://wokwi.com)
-2. Créer un nouveau projet ESP32
-3. Copier le contenu de `esp32/smart_home.ino` dans l'éditeur
-4. Copier `esp32/diagram.json` dans l'onglet Diagram
-5. Modifier `BACKEND_URL` avec votre IP (ou tunnel ngrok)
+L’assistant analyse la commande et exécute l’action correspondante.
 
 ---
 
 ## 🔌 API REST
 
-| Méthode | Route        | Description                              |
-|---------|-------------|------------------------------------------|
-| GET     | `/`         | Statut du serveur                        |
-| POST    | `/data`     | Recevoir données capteurs (ESP32)        |
-| POST    | `/command`  | Envoyer une commande texte à l'IA        |
-| GET     | `/latest`   | Dernière lecture capteurs                |
-| GET     | `/history`  | Historique des lectures                  |
-| GET     | `/state`    | État actuel des appareils               |
-| POST    | `/control`  | Contrôle direct LED/ventilateur         |
-| GET     | `/predict`  | Prédiction températures 24h (SVR)       |
-| POST    | `/simulate` | Simuler une lecture (tests)             |
-
-### Exemple : envoyer une commande
-
-```bash
-curl -X POST http://localhost:5000/command \
-  -H "Content-Type: application/json" \
-  -d '{"text": "Allume la lumière"}'
-```
-
-Réponse :
-```json
-{
-  "action": "led_on",
-  "response": "Lumière allumée !",
-  "device_state": { "led": true, "fan_speed": 0 }
-}
-```
-
----
-
-## 🤖 Fonctionnement de l'IA
-
-1. L'utilisateur tape une commande dans le dashboard
-2. Le backend envoie la commande à **Groq (llama3-8b-8192)**
-3. L'IA retourne un JSON `{"action": "...", "response": "..."}`
-4. Le backend applique l'action et répond au dashboard
-5. Le dashboard met à jour l'interface en temps réel
-
----
-
-## 📊 Prédiction des températures
-
-Le module `predictor.py` utilise un modèle **SVR (Support Vector Regression)** :
-- Entraîné sur l'historique disponible
-- Prédit les températures des **24 prochaines heures**
-- Se met à jour toutes les 5 minutes dans le dashboard
+| Méthode | Route        | Description                        |
+| ------- | ------------ | ---------------------------------- |
+| GET     | /status      | Retourne l’état complet du système |
+| GET     | /esp         | Retourne l’état destiné à l’ESP32  |
+| POST    | /temperature | Mise à jour de la température      |
+| POST    | /light       | Contrôle de la lumière             |
+| POST    | /fan         | Contrôle de la ventilation         |
 
 ---
 
 ## 🛠️ Technologies utilisées
 
-| Composant       | Technologie                  |
-|----------------|------------------------------|
-| Microcontrôleur | ESP32 (Wokwi)               |
-| Capteurs        | DHT22 (température/humidité)|
-| Backend         | Python · Flask              |
-| Base de données | SQLite                      |
-| IA              | Groq API · llama3-8b        |
-| ML Prédiction   | scikit-learn · SVR          |
-| Frontend        | HTML · CSS · JS · Chart.js  |
+| Domaine         | Technologie           |
+| --------------- | --------------------- |
+| Microcontrôleur | ESP32 (Wokwi)         |
+| Capteur         | DHT22                 |
+| Backend         | Python Flask          |
+| Frontend        | HTML, CSS, JavaScript |
+| Communication   | HTTP REST             |
+| Tunnel réseau   | ngrok                 |
+| IA              | Ollama + Llama 3.2    |
 
 ---
 
-## 📹 Démo vidéo
+## 🚀 Exécution
 
-Pour la vidéo de démonstration (30s–2min), montrer :
-1. Le dashboard ouvert dans le navigateur
-2. La simulation ESP32 en cours (`simulate_esp32.py`)
-3. Les données en temps réel sur les graphes
-4. Une commande texte à l'IA ("Allume la lumière")
-5. La mise à jour des contrôles rapides
-6. La courbe de prédiction 24h
+### Backend
+
+```bash
+cd backend
+python server.py
+```
+
+### Tunnel ngrok
+
+```bash
+ngrok http --scheme=http 5000
+```
+
+### ESP32
+
+Lancer la simulation sur Wokwi.
+
+### Dashboard
+
+Ouvrir :
+
+```text
+frontend/index.html
+```
+
+avec Live Server.
 
 ---
 
-## 👤 Auteur
+## 📹 Démonstration
 
-Projet réalisé dans le cadre du cours IoT & Intelligence Artificielle.
+La vidéo de démonstration présente :
+
+1. Le dashboard web
+2. La simulation ESP32 sur Wokwi
+3. Les mesures de température en temps réel
+4. Le contrôle de la lumière
+5. Les commandes de l’assistant IA
+6. La mise à jour automatique du système
+
+---
+
+## 👨‍🎓 Réalisé par
+Fatima-Ez-Zahraa Skioui
+Projet réalisé dans le cadre du module IoT & Intelligence Artificielle.

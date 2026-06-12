@@ -40,9 +40,6 @@ def fan():
         "fan": fan_speed
     })
 
-if __name__ == "__main__":
-    app.run(debug=True)
-
 @app.route("/temperature", methods=["POST"])
 def update_temperature():
     global temperature
@@ -52,4 +49,14 @@ def update_temperature():
 
     return jsonify({
         "success": True
-    })   
+    })
+
+@app.route("/esp")
+def esp_status():
+    return jsonify({
+        "light": light_state,
+        "fan": fan_speed
+    })
+
+if __name__ == "__main__":
+    app.run(debug=True)

@@ -42,3 +42,14 @@ def fan():
 
 if __name__ == "__main__":
     app.run(debug=True)
+
+@app.route("/temperature", methods=["POST"])
+def update_temperature():
+    global temperature
+
+    data = request.json
+    temperature = data["temperature"]
+
+    return jsonify({
+        "success": True
+    })   

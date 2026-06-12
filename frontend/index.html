@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Smart Home Dashboard</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <h1>🏠 Smart Home Dashboard</h1>
+
+    <div class="card">
+        <h2>💡 Lumière</h2>
+        <p id="light">OFF</p>
+
+        <button onclick="lightOn()">ON</button>
+        <button onclick="lightOff()">OFF</button>
+    </div>
+
+    <div class="card">
+        <h2>🌬️ Ventilation</h2>
+        <p id="fan">0%</p>
+
+        <input
+            type="range"
+            min="0"
+            max="100"
+            value="0"
+            id="fanSlider"
+            onchange="updateFan()"
+        >
+    </div>
+
+    <div class="card">
+        <h2>🌡️ Température</h2>
+        <p id="temp">25°C</p>
+    </div>
+
+    <script src="script.js"></script>
+
+</body>
+</html>

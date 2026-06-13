@@ -1,42 +1,338 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-    <meta charset="UTF-8">
-    <title>Smart Home Dashboard</title>
-    <link rel="stylesheet" href="style.css">
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Maison Intelligente – Tableau de Bord</title>
+<style>
+  /* ── Variables ── */
+  :root {
+    --bg:        #0f1117;
+    --surface:   #1a1d2e;
+    --surface2:  #232640;
+    --accent:    #6c63ff;
+    --accent2:   #ff6584;
+    --green:     #00d68f;
+    --amber:     #ffb347;
+    --blue:      #4fc3f7;
+    --text:      #e8eaf6;
+    --muted:     #7986cb;
+    --border:    rgba(108,99,255,0.2);
+    --glow:      0 0 20px rgba(108,99,255,0.25);
+    --radius:    14px;
+    --font:      'Segoe UI', system-ui, sans-serif;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: var(--font);
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    padding: 0 0 40px;
+  }
+
+  /* ── Header ── */
+  header {
+    background: linear-gradient(135deg, var(--surface) 0%, #1e2040 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 18px 32px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    backdrop-filter: blur(10px);
+  }
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .logo-icon {
+    width: 40px; height: 40px;
+    background: var(--accent);
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px;
+    box-shadow: var(--glow);
+  }
+  .logo h1 { font-size: 1.2rem; font-weight: 700; letter-spacing: -0.3px; }
+  .logo p  { font-size: 0.72rem; color: var(--muted); }
+
+  .status-pill {
+    display: flex; align-items: center; gap: 8px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+  }
+  .dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--green);
+    animation: pulse 2s infinite;
+  }
+  .dot.offline { background: var(--accent2); animation: none; }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50%       { opacity: 0.4; }
+  }
+
+  /* ── Grid layout ── */
+  .main { max-width: 1200px; margin: 0 auto; padding: 28px 24px; }
+
+  .grid-3 {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 18px;
+    margin-bottom: 20px;
+  }
+  .grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 18px;
+    margin-bottom: 20px;
+  }
+
+  /* ── Cards ── */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 22px;
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+  .card:hover { transform: translateY(-2px); box-shadow: var(--glow); }
+  .card-label {
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 1.2px;
+    color: var(--muted);
+    margin-bottom: 10px;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .card-value {
+    font-size: 2.4rem;
+    font-weight: 800;
+    line-height: 1;
+    letter-spacing: -1px;
+  }
+  .card-sub { font-size: 0.8rem; color: var(--muted); margin-top: 6px; }
+
+  /* ── Temp card ── */
+  .temp-value { color: var(--accent2); }
+  .fan-value  { color: var(--amber); }
+  .status-value { color: var(--green); font-size: 1.6rem; }
+
+  /* ── Controls ── */
+  .controls-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+    margin-top: 6px;
+  }
+  .ctrl-btn {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px;
+    cursor: pointer;
+    transition: all 0.2s;
+    color: var(--text);
+    text-align: center;
+    font-size: 0.85rem;
+    font-family: var(--font);
+  }
+  .ctrl-btn .icon { font-size: 1.4rem; display: block; margin-bottom: 4px; }
+  .ctrl-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .ctrl-btn.active {
+    background: rgba(108,99,255,0.15);
+    border-color: var(--accent);
+    color: var(--accent);
+    box-shadow: 0 0 12px rgba(108,99,255,0.2);
+  }
+
+  /* Fan speed buttons */
+  .fan-controls { display: flex; gap: 8px; margin-top: 10px; }
+  .fan-btn {
+    flex: 1; padding: 8px 4px;
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 8px; cursor: pointer; font-size: 0.75rem;
+    color: var(--muted); font-family: var(--font); transition: all 0.2s;
+  }
+  .fan-btn:hover { border-color: var(--amber); color: var(--amber); }
+  .fan-btn.active { background: rgba(255,179,71,0.15); border-color: var(--amber); color: var(--amber); }
+
+  /* ── Chart card ── */
+  .chart-card { padding: 22px; }
+  .chart-card h3 { font-size: 0.85rem; color: var(--muted); margin-bottom: 16px; text-transform: uppercase; letter-spacing: 1px; }
+  canvas { max-height: 180px; }
+
+  /* ── Info card (replaces chart + AI chat) ── */
+  .info-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 22px;
+  }
+  .info-card h3 {
+    font-size: 0.85rem; color: var(--muted);
+    margin-bottom: 16px; text-transform: uppercase; letter-spacing: 1px;
+  }
+
+  /* ESP log */
+  .esp-log {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px;
+    font-size: 0.82rem;
+    color: var(--green);
+    font-family: 'Courier New', monospace;
+    min-height: 100px;
+    max-height: 160px;
+    overflow-y: auto;
+  }
+  .esp-log .log-line { margin-bottom: 4px; }
+  .esp-log .log-line span { color: var(--muted); }
+
+  /* ── Section title ── */
+  .section-title {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: var(--muted);
+    margin-bottom: 14px;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 8px;
+  }
+
+  /* ── Toast notification ── */
+  #toast {
+    position: fixed; bottom: 24px; right: 24px;
+    background: var(--surface);
+    border: 1px solid var(--accent);
+    color: var(--text);
+    padding: 12px 20px;
+    border-radius: 10px;
+    font-size: 0.85rem;
+    box-shadow: var(--glow);
+    opacity: 0;
+    transform: translateY(10px);
+    transition: all 0.3s;
+    z-index: 999;
+    pointer-events: none;
+  }
+  #toast.show { opacity: 1; transform: none; }
+
+  /* ── Responsive ── */
+  @media (max-width: 768px) {
+    .grid-3 { grid-template-columns: 1fr; }
+    .grid-2 { grid-template-columns: 1fr; }
+    header { padding: 14px 16px; }
+    .main  { padding: 16px 12px; }
+  }
+</style>
 </head>
 <body>
 
-    <h1>🏠 Smart Home Dashboard</h1>
+<!-- ── Header ── -->
+<header>
+  <div class="logo">
+    <div class="logo-icon">🏠</div>
+    <div>
+      <h1>Maison Intelligente</h1>
+      <p>Tableau de bord IoT · Flask + ESP32</p>
+    </div>
+  </div>
+  <div class="status-pill">
+    <div class="dot" id="conn-dot"></div>
+    <span id="conn-label">Connexion…</span>
+  </div>
+</header>
 
+<!-- ── Main ── -->
+<div class="main">
+
+  <!-- Métriques actuelles -->
+  <p class="section-title">📡 Capteurs en temps réel</p>
+  <div class="grid-3">
     <div class="card">
-        <h2>💡 Lumière</h2>
-        <p id="light">OFF</p>
+      <div class="card-label">🌡️ Température</div>
+      <div class="card-value temp-value" id="temp-val">--.-</div>
+      <div class="card-sub">°C · Envoyée par l'ESP32</div>
+    </div>
+    <div class="card">
+      <div class="card-label">💡 Lumière</div>
+      <div class="card-value status-value" id="light-val">--</div>
+      <div class="card-sub">État actuel</div>
+    </div>
+    <div class="card">
+      <div class="card-label">🌀 Ventilateur</div>
+      <div class="card-value fan-value" id="fan-val">--</div>
+      <div class="card-sub">Vitesse actuelle</div>
+    </div>
+  </div>
 
-        <button onclick="lightOn()">ON</button>
-        <button onclick="lightOff()">OFF</button>
+  <!-- Graphique température -->
+  <div class="card chart-card" style="margin-bottom:20px;">
+    <h3>📈 Historique Température (10 dernières valeurs)</h3>
+    <canvas id="tempChart"></canvas>
+  </div>
+
+  <!-- Contrôles + Log ESP -->
+  <div class="grid-2">
+
+    <!-- Contrôles -->
+    <div class="card">
+      <p class="section-title">⚡ Contrôles rapides</p>
+      <div class="controls-grid">
+        <button class="ctrl-btn" id="btn-led" onclick="toggleLight()">
+          <span class="icon" id="led-icon">💡</span>
+          <span id="led-label">Lumière OFF</span>
+        </button>
+        <div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:14px;">
+          <div style="font-size:0.8rem;color:var(--muted);margin-bottom:8px;">🌀 Ventilateur</div>
+          <div class="fan-controls">
+            <button class="fan-btn" id="fan-0" onclick="setFan(0)">OFF</button>
+            <button class="fan-btn" id="fan-1" onclick="setFan(1)">▸</button>
+            <button class="fan-btn" id="fan-2" onclick="setFan(2)">▸▸</button>
+            <button class="fan-btn" id="fan-3" onclick="setFan(3)">▸▸▸</button>
+          </div>
+        </div>
+      </div>
+      <div style="margin-top:16px;padding:12px;background:var(--bg);border-radius:10px;border:1px solid var(--border);">
+        <div style="font-size:0.72rem;color:var(--muted);margin-bottom:8px;">ÉTAT ACTUEL</div>
+        <div style="display:flex;gap:16px;font-size:0.85rem;">
+          <span>Lumière : <strong id="state-led" style="color:var(--muted)">OFF</strong></span>
+          <span>Fan : <strong id="state-fan" style="color:var(--muted)">OFF</strong></span>
+        </div>
+      </div>
     </div>
 
-    <div class="card">
-        <h2>🌬️ Ventilation</h2>
-        <p id="fan">0%</p>
-
-        <input
-            type="range"
-            min="0"
-            max="100"
-            value="0"
-            id="fanSlider"
-            onchange="updateFan()"
-        >
+    <!-- Log ESP32 -->
+    <div class="info-card">
+      <h3>📟 Journal ESP32</h3>
+      <div class="esp-log" id="esp-log">
+        <div class="log-line"><span>[--:--:--]</span> En attente de données…</div>
+      </div>
+      <p style="font-size:0.72rem;color:var(--muted);margin-top:8px;text-align:center;">
+        Rafraîchissement automatique toutes les 10 secondes via <code style="color:var(--accent)">GET /status</code>
+      </p>
     </div>
 
-    <div class="card">
-        <h2>🌡️ Température</h2>
-        <p id="temp">25°C</p>
-    </div>
+  </div>
 
-    <script src="script.js"></script>
+</div>
 
+<!-- Toast -->
+<div id="toast"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="script.js"></script>
 </body>
 </html>

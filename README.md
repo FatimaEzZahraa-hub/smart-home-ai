@@ -143,3 +143,5 @@ La démonstration montre :
 **Fatima-Ez-Zahraa Skioui**
 
 *Projet réalisé dans le cadre du module IoT & Intelligence Artificielle.*
+> 📁 **Note :** Les fichiers du projet se trouvent sur la branche [`master`](../../tree/master).
+> Pour y accéder, sélectionnez la branche `master` depuis le menu des branches en haut à gauche.

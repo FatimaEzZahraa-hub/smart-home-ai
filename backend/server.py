@@ -1,5 +1,8 @@
 from flask import Flask, jsonify, request
 from flask_cors import CORS
+from ai_assistant import ask_llama
+
+import json
 
 app = Flask(__name__)
 CORS(app)
@@ -57,6 +60,76 @@ def esp_status():
         "light": light_state,
         "fan": fan_speed
     })
+
+@app.route("/ask", methods=["POST"])
+def ask():
+
+    global light_state
+    global temperature
+
+    data = request.json
+    prompt = data["message"]
+
+    ai_response = ask_llama(prompt)
+
+    try:
+
+        result = json.loads(ai_response)
+
+        action = result.get("action")
+
+        if action == "light_on":
+
+            light_state = True
+
+            return jsonify({
+                "response": "La lumière a été allumée."
+            })
+
+        elif action == "light_off":
+
+            light_state = False
+
+            return jsonify({
+                "response": "La lumière a été éteinte."
+            })
+
+        elif action == "temperature":
+
+            return jsonify({
+                "response": f"La température actuelle est {temperature} °C."
+            })
+
+        return jsonify({
+            "response": "Aucune action exécutée."
+        })
+
+    except Exception as e:
+
+        return jsonify({
+            "response": str(e)
+        })
+
+@app.route("/predict")
+def predict():
+
+    global temperature
+
+    predictions = []
+
+    current = temperature
+
+    for i in range(1, 13):
+
+        predictions.append({
+            "hour": f"+{i}h",
+            "temperature": round(
+                current + ((i % 4) - 1),
+                1
+            )
+        })
+
+    return jsonify(predictions)
 
 if __name__ == "__main__":
     app.run(debug=True)

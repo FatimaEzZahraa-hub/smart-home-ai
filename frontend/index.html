@@ -200,6 +200,79 @@
   .esp-log .log-line { margin-bottom: 4px; }
   .esp-log .log-line span { color: var(--muted); }
 
+  /* ── AI Chat ── */
+  .chat-messages {
+    height: 180px;
+    overflow-y: auto;
+    background: var(--bg);
+    border-radius: 10px;
+    padding: 14px;
+    margin-bottom: 12px;
+    border: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    scroll-behavior: smooth;
+  }
+  .msg {
+    max-width: 80%;
+    padding: 10px 14px;
+    border-radius: 12px;
+    font-size: 0.85rem;
+    line-height: 1.4;
+    animation: fadeIn 0.3s;
+  }
+  @keyframes fadeIn { from { opacity:0; transform: translateY(6px); } to { opacity:1; transform: none; } }
+  .msg.user {
+    background: var(--accent);
+    color: #fff;
+    align-self: flex-end;
+    border-bottom-right-radius: 4px;
+  }
+  .msg.ai {
+    background: var(--surface2);
+    color: var(--text);
+    align-self: flex-start;
+    border-bottom-left-radius: 4px;
+    border: 1px solid var(--border);
+  }
+  .chat-input-row { display: flex; gap: 10px; }
+  .chat-input {
+    flex: 1;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 10px 14px;
+    color: var(--text);
+    font-family: var(--font);
+    font-size: 0.9rem;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .chat-input:focus { border-color: var(--accent); }
+  .chat-input::placeholder { color: var(--muted); }
+  .send-btn {
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    padding: 10px 20px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: 600;
+    transition: opacity 0.2s, transform 0.1s;
+  }
+  .send-btn:hover  { opacity: 0.85; }
+  .send-btn:active { transform: scale(0.97); }
+  .send-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+  .suggestions { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 10px; }
+  .suggestion {
+    background: var(--surface2); border: 1px solid var(--border);
+    padding: 5px 12px; border-radius: 20px; font-size: 0.75rem;
+    cursor: pointer; color: var(--muted); transition: all 0.2s;
+  }
+  .suggestion:hover { border-color: var(--accent); color: var(--accent); }
+
   /* ── Section title ── */
   .section-title {
     font-size: 0.75rem;
@@ -278,14 +351,23 @@
     </div>
   </div>
 
-  <!-- Graphique température -->
-  <div class="card chart-card" style="margin-bottom:20px;">
-    <h3>📈 Historique Température (10 dernières valeurs)</h3>
-    <canvas id="tempChart"></canvas>
+  <!-- Graphiques -->
+  <div class="grid-2" style="margin-bottom:20px;">
+    <div class="card chart-card">
+      <h3>📈 Historique Température (10 dernières valeurs)</h3>
+      <canvas id="tempChart"></canvas>
+    </div>
+    <div class="card chart-card">
+      <h3>🤖 Prédiction IA (6 prochaines heures)</h3>
+      <canvas id="predChart"></canvas>
+      <p style="font-size:0.72rem;color:var(--muted);margin-top:8px;text-align:center;">
+        Mise à jour toutes les 5 min · <code style="color:var(--accent)">GET /predict</code>
+      </p>
+    </div>
   </div>
 
-  <!-- Contrôles + Log ESP -->
-  <div class="grid-2">
+  <!-- Contrôles + Log ESP + Chat IA -->
+  <div class="grid-2" style="margin-bottom:20px;">
 
     <!-- Contrôles -->
     <div class="card">
@@ -321,10 +403,29 @@
         <div class="log-line"><span>[--:--:--]</span> En attente de données…</div>
       </div>
       <p style="font-size:0.72rem;color:var(--muted);margin-top:8px;text-align:center;">
-        Rafraîchissement automatique toutes les 10 secondes via <code style="color:var(--accent)">GET /status</code>
+        Rafraîchissement automatique toutes les 5 secondes via <code style="color:var(--accent)">GET /status</code>
       </p>
     </div>
 
+  </div>
+
+  <!-- Chat IA -->
+  <div class="card" style="margin-bottom:20px;">
+    <p class="section-title">🤖 Assistant IA · Llama3</p>
+    <div class="suggestions">
+      <span class="suggestion" onclick="sendSuggestion(this)">Allume la lumière</span>
+      <span class="suggestion" onclick="sendSuggestion(this)">Éteins la lumière</span>
+      <span class="suggestion" onclick="sendSuggestion(this)">Quelle est la température ?</span>
+    </div>
+    <div class="chat-messages" id="chat-box">
+      <div class="msg ai">Bonjour ! Je suis votre assistant IA. Dites-moi ce que vous souhaitez faire dans la maison.</div>
+    </div>
+    <div class="chat-input-row">
+      <input class="chat-input" id="chat-input" type="text"
+             placeholder="Ex : Allume la lumière, quelle est la température…"
+             onkeydown="if(event.key==='Enter') sendCommand()" />
+      <button class="send-btn" id="send-btn" onclick="sendCommand()">Envoyer</button>
+    </div>
   </div>
 
 </div>

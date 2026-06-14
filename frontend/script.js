@@ -33,6 +33,34 @@ const tempChart = new Chart(document.getElementById("tempChart"), {
   }
 });
 
+// ── Prediction Chart ──
+const predChart = new Chart(document.getElementById("predChart"), {
+  type: "line",
+  data: {
+    labels: [],
+    datasets: [{
+      label: "Prédiction °C",
+      data: [],
+      borderColor: "#a78bfa",
+      backgroundColor: "rgba(167,139,250,0.1)",
+      borderWidth: 2,
+      pointRadius: 3,
+      tension: 0.4,
+      borderDash: [5, 3],
+      fill: true
+    }]
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: true,
+    plugins: { legend: { display: false } },
+    scales: {
+      x: { ticks: { color: "#7986cb", font: { size: 10 } }, grid: { color: "rgba(108,99,255,0.1)" } },
+      y: { ticks: { color: "#7986cb", font: { size: 10 } }, grid: { color: "rgba(108,99,255,0.1)" } }
+    }
+  }
+});
+
 // ── API calls ──
 
 // GET /status  →  { light, fan, temperature }
@@ -105,6 +133,60 @@ async function setFan(speed) {
   } catch {
     addLog("Erreur lors du contrôle du ventilateur.", "error");
   }
+}
+
+// GET /predict  →  [{ hour, temperature }, ...]
+async function fetchPredictions() {
+  try {
+    const r = await fetch(`${API}/predict`);
+    if (!r.ok) return;
+    const data = await r.json();
+    predChart.data.labels = data.map(d => d.hour);
+    predChart.data.datasets[0].data = data.map(d => d.temperature);
+    predChart.update("none");
+  } catch {
+    addLog("Erreur lors de la récupération des prédictions.", "error");
+  }
+}
+
+// POST /ask  →  { response }
+async function sendCommand() {
+  const input = document.getElementById("chat-input");
+  const text  = input.value.trim();
+  if (!text) return;
+
+  addMessage(text, "user");
+  input.value = "";
+  document.getElementById("send-btn").disabled = true;
+
+  try {
+    const r = await fetch(`${API}/ask`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ message: text })
+    });
+    const d = await r.json();
+    addMessage(d.response, "ai");
+    // Refresh state in case AI changed light
+    await fetchStatus();
+  } catch {
+    addMessage("Erreur de connexion au serveur Flask.", "ai");
+  }
+  document.getElementById("send-btn").disabled = false;
+}
+
+function sendSuggestion(el) {
+  document.getElementById("chat-input").value = el.textContent;
+  sendCommand();
+}
+
+function addMessage(text, role) {
+  const box = document.getElementById("chat-box");
+  const div = document.createElement("div");
+  div.className = `msg ${role}`;
+  div.textContent = text;
+  box.appendChild(div);
+  box.scrollTop = box.scrollHeight;
 }
 
 // ── UI helpers ──
@@ -186,8 +268,11 @@ function showToast(msg) {
 // ── Init ──
 async function init() {
   await fetchStatus();
-  // Auto-refresh every 10 s (mirrors ESP32 delay)
-  setInterval(fetchStatus, 10000);
+  await fetchPredictions();
+  // Auto-refresh every 5 s (mirrors ESP32 delay)
+  setInterval(fetchStatus, 5000);
+  // Predictions refresh every 5 min
+  setInterval(fetchPredictions, 300000);
 }
 
 init();

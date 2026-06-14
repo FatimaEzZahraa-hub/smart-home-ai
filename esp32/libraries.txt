@@ -1,0 +1,9 @@
+# Wokwi Library List
+# See https://docs.wokwi.com/guides/libraries
+
+DHT sensor library
+DHT sensor library for ESPx
+ServoESP32
+SimpleServoESP32
+ServoESP32Fix
+ArduinoJson

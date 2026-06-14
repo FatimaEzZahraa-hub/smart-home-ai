@@ -1,165 +1,145 @@
-# 🏠 Assistant de Maison Intelligente
+# 🏠 Smart Home AI
 
-> Projet IoT & Intelligence Artificielle
-
-## 📋 Présentation
-
-Ce projet implémente un système de maison intelligente permettant de surveiller et contrôler des équipements à distance à travers une interface web interactive.
-
-Le système combine :
-
-* Un ESP32 simulé sur Wokwi
-* Un capteur DHT22 pour la température
-* Une LED simulant l’éclairage
-* Un serveur Flask exposant une API REST
-* Un dashboard web en temps réel
-* Un assistant IA permettant d’interpréter des commandes en langage naturel
+> Projet IoT intelligent réalisé avec **ESP32**, **Flask** et **Intelligence Artificielle** (Ollama + Llama 3.2)
 
 ---
 
-## 🏗️ Architecture du projet
+## 📋 Description
 
-```text
-ESP32 (Wokwi)
-    │
-    ▼
-Serveur Flask
-    │
-    ├── Dashboard Web
-    │
-    └── Assistant IA
-```
+Ce projet permet de surveiller et contrôler une maison intelligente à travers un dashboard web.
 
-Le capteur DHT22 envoie périodiquement les mesures de température au serveur Flask via HTTP.
+Le système utilise un capteur **DHT22** connecté à un **ESP32** pour mesurer la température. Les données sont envoyées à un serveur **Flask** puis affichées en temps réel sur une interface web.
 
-Le serveur stocke l’état de la maison (température, lumière, ventilation) et le transmet au dashboard.
+Un assistant **IA basé sur Ollama et Llama 3.2** permet également de contrôler certains équipements via des commandes en langage naturel.
 
 ---
 
-## 📂 Structure du projet
+## 🚀 Fonctionnalités
 
-```text
-smart-home-ai/
-
-├── backend/
-│   ├── server.py
-│   └── requirements.txt
-│
-├── frontend/
-│   ├── index.html
-│   ├── style.css
-│   └── script.js
-│
-├── esp32/
-│   ├── smart_home.ino
-│   └── diagram.json
-│
-└── README.md
-```
-
----
-
-## ⚙️ Fonctionnalités
-
-### 🌡️ Surveillance de la température
-
-* Lecture de la température avec un capteur DHT22
-* Envoi automatique des données au serveur Flask
-* Affichage en temps réel sur le dashboard
-
-### 💡 Contrôle de l’éclairage
-
-* Allumage et extinction de la lumière
-* Synchronisation entre le dashboard et l’ESP32
-
-### 🌬️ Gestion de la ventilation
-
-* Contrôle de la vitesse du ventilateur
-* Affichage de l’état actuel dans le dashboard
-
-### 🤖 Assistant IA
-
-L’utilisateur peut envoyer des commandes telles que :
-
-* « Allume la lumière »
-* « Éteins la lumière »
-* « Augmente la ventilation »
-* « Quelle est la température actuelle ? »
-
-L’assistant analyse la commande et exécute l’action correspondante.
-
----
-
-## 🔌 API REST
-
-| Méthode | Route        | Description                        |
-| ------- | ------------ | ---------------------------------- |
-| GET     | /status      | Retourne l’état complet du système |
-| GET     | /esp         | Retourne l’état destiné à l’ESP32  |
-| POST    | /temperature | Mise à jour de la température      |
-| POST    | /light       | Contrôle de la lumière             |
-| POST    | /fan         | Contrôle de la ventilation         |
+- ✅ Lecture de la température via DHT22
+- ✅ Communication ESP32 ↔ Flask
+- ✅ Dashboard Web temps réel
+- ✅ Affichage de la température actuelle
+- ✅ Historique graphique des températures
+- ✅ Contrôle d'une LED à distance
+- ✅ Assistant IA avec Ollama (Llama 3.2)
+- ✅ Commandes en langage naturel :
+  - `Allume la lumière`
+  - `Éteins la lumière`
+  - `Quelle est la température ?`
+- ✅ Prédiction graphique des températures
 
 ---
 
 ## 🛠️ Technologies utilisées
 
-| Domaine         | Technologie           |
-| --------------- | --------------------- |
-| Microcontrôleur | ESP32 (Wokwi)         |
-| Capteur         | DHT22                 |
-| Backend         | Python Flask          |
-| Frontend        | HTML, CSS, JavaScript |
-| Communication   | HTTP REST             |
-| Tunnel réseau   | ngrok                 |
-| IA              | Ollama + Llama 3.2    |
+| Couche | Technologies |
+|---|---|
+| 🔧 **Hardware** | ESP32 · DHT22 · LED · Wokwi Simulator |
+| ⚙️ **Backend** | Python · Flask · Flask-CORS |
+| 🌐 **Frontend** | HTML · CSS · JavaScript · Chart.js |
+| 🤖 **IA** | Ollama · Llama 3.2 |
 
 ---
 
-## 🚀 Exécution
+## 📂 Structure du projet
 
-### Backend
+```
+smart-home-ai/
+├── backend/
+│   ├── server.py
+│   ├── ai_assistant.py
+│   └── requirements.txt
+├── frontend/
+│   ├── index.html
+│   ├── style.css
+│   └── script.js
+├── esp32/
+│   └── smart_home.ino
+└── README.md
+```
+
+---
+
+## ⚙️ Installation
+
+### 1. Cloner le projet
 
 ```bash
-cd backend
+git clone https://github.com/FatimaEzZahraa-hub/smart-home-ai.git
+cd smart-home-ai
+```
+
+### 2. Installer les dépendances
+
+```bash
+pip install flask flask-cors requests ollama
+```
+
+### 3. Lancer Ollama
+
+```bash
+ollama run llama3.2
+```
+
+### 4. Démarrer le serveur Flask
+
+```bash
 python server.py
 ```
 
-### Tunnel ngrok
+### 5. Ouvrir le dashboard
 
-```bash
-ngrok http --scheme=http 5000
-```
-
-### ESP32
-
-Lancer la simulation sur Wokwi.
-
-### Dashboard
-
-Ouvrir :
-
-```text
-frontend/index.html
-```
-
-avec Live Server.
+Ouvrir `frontend/index.html` avec **Live Server**.
 
 ---
 
-## 📹 Démonstration
+## 📡 Architecture du système
 
-La vidéo de démonstration présente :
-
-1. Le dashboard web
-2. La simulation ESP32 sur Wokwi
-3. Les mesures de température en temps réel
-4. Le contrôle de la lumière
-5. Les commandes de l’assistant IA
-6. La mise à jour automatique du système
+```
+┌─────────────────┐
+│  ESP32 + DHT22  │
+└────────┬────────┘
+         │ HTTP POST
+         ▼
+┌─────────────────┐
+│    Flask API    │
+└────────┬────────┘
+         │
+         ▼
+┌─────────────────┐
+│  Dashboard Web  │
+└────────┬────────┘
+         │
+         ▼
+┌─────────────────┐
+│ Assistant IA    │
+│ (Ollama/Llama)  │
+└────────┬────────┘
+         │
+         ▼
+┌─────────────────┐
+│ Contrôle équip. │
+└─────────────────┘
+```
 
 ---
 
-## 👨‍🎓 Réalisé par
-Fatima-Ez-Zahraa Skioui
-Projet réalisé dans le cadre du module IoT & Intelligence Artificielle.
+## 🎥 Démonstration
+
+La démonstration montre :
+
+- 🌡️ Lecture de la température en temps réel
+- 🔗 Communication ESP32 ↔ Flask
+- 📈 Affichage graphique de l'historique et des prédictions
+- 💡 Contrôle de la LED
+- 🤖 Assistant IA avec Ollama
+- 🔮 Prédiction des températures
+
+---
+
+## 👩‍💻 Réalisée par
+
+**Fatima-Ez-Zahraa Skioui**
+
+*Projet réalisé dans le cadre du module IoT & Intelligence Artificielle.*
